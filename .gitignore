@@ -1,0 +1,10 @@
+*.ilk
+*.sdf
+*.obj
+/vsproject/*/Debug/
+/vsproject/*/Release/
+ipch/
+*.DS_Store
+moc_*.cpp
+*.vcxproj.user
+moc_*
