@@ -13,5 +13,4 @@ DESTDIR = $$PWD/bin
 SOURCES += main.cpp
 
 LIBS += $$PWD/../../ffmpge-lib/lib/*.lib
-
 INCLUDEPATH += $$PWD/../../ffmpge-lib/include
