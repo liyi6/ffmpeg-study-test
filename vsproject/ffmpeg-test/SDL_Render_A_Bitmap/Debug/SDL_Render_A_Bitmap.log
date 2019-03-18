@@ -1,0 +1,13 @@
+﻿生成启动时间为 2019/3/18 18:49:54。
+     1>项目“D:\study\AV\ffmpeg\projects\ffmpeg-study-test\vsproject\ffmpeg-test\SDL_Render_A_Bitmap\SDL_Render_A_Bitmap.vcxproj”在节点 2 上(Build 个目标)。
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /Iinclude\SDL2 /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt sdl_render_a_bitmap.cpp
+         sdl_render_a_bitmap.cpp
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\study\AV\ffmpeg\projects\ffmpeg-study-test\vsproject\ffmpeg-test\Debug\SDL_Render_A_Bitmap.exe" /INCREMENTAL /NOLOGO /LIBPATH:lib SDL2.lib SDL2main.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\study\AV\ffmpeg\projects\ffmpeg-study-test\vsproject\ffmpeg-test\Debug\SDL_Render_A_Bitmap.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\study\AV\ffmpeg\projects\ffmpeg-study-test\vsproject\ffmpeg-test\Debug\SDL_Render_A_Bitmap.lib" /MACHINE:X86 Debug\sdl_render_a_bitmap.obj
+         SDL_Render_A_Bitmap.vcxproj -> D:\study\AV\ffmpeg\projects\ffmpeg-study-test\vsproject\ffmpeg-test\Debug\SDL_Render_A_Bitmap.exe
+     1>已完成生成项目“D:\study\AV\ffmpeg\projects\ffmpeg-study-test\vsproject\ffmpeg-test\SDL_Render_A_Bitmap\SDL_Render_A_Bitmap.vcxproj”(Build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:00.90
