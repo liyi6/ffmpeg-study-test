@@ -76,6 +76,11 @@ int main(int agrc, char* agrv[]) {
 		return -4;
 	}
 
+
+	printf("--------------- File Information ----------------\n");
+	av_dump_format(avformatContext, videoStreamIndex, file_path, 0);
+	printf("-------------------------------------------------\n");
+
 	//avcodec_register_all();
 
 	AVCodec* codec = avcodec_find_decoder(avformatContext->streams[videoStreamIndex]->codecpar->codec_id);
@@ -91,78 +96,83 @@ int main(int agrc, char* agrv[]) {
 		return -6;
 	}
 
-	//Output Info-----------------------------
-	printf("--------------- File Information ----------------\n");
-	av_dump_format(avformatContext, videoStreamIndex, file_path, 0);
-	printf("-------------------------------------------------\n");
-
 	AVFrame* frame = av_frame_alloc();
 	AVFrame* yuvFrame = av_frame_alloc();
 	
-	unsigned char* frame_buffer = (unsigned char *)av_malloc(av_image_get_buffer_size(codecContext->pix_fmt, codecContext->width, codecContext->height, 1));
+	/* 计算一帧图片的大小 */
+	int frame_buffer_size = av_image_get_buffer_size(codecContext->pix_fmt, codecContext->width, codecContext->height, 1);
+	if (frame_buffer_size < 0) {
+		printf("Open codec fail.");
+		return -6;
+	}
+	/* 分配一帧大小的buffer */
+	unsigned char* frame_buffer = (unsigned char *)av_malloc(frame_buffer_size);
 
+	/* 根据后四个数据填充前两个数据， 具体分析需要看AVFrame结构体的data和linesize是如何表征不同像素格式及其内存布局的 */
 	av_image_fill_arrays(yuvFrame->data, yuvFrame->linesize, frame_buffer, codecContext->pix_fmt, codecContext->width, codecContext->height, 1);
 
+	/* 创建AVPacket对象，用于读取一帧未解码的数据 */
 	AVPacket* packet = (AVPacket *)av_malloc(sizeof(AVPacket));
 
+	/* 创建一个SwsContext上下文，可以用于指示sws_scale函数将解码后的数据，转换成想要的格式 */
 	SwsContext* img_convert_ctx = sws_getContext(codecContext->width, codecContext->height, codecContext->pix_fmt, codecContext->width, codecContext->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL);
 	if (!img_convert_ctx) {
 		printf("sws_getContext  fail.");
 		return -7;
 	}
 	
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER)) {
+	/* 初始化SDL库 */
+	if (SDL_Init(SDL_INIT_VIDEO)) {
 		printf("Could not initialize SDL - %s\n", SDL_GetError());
-		return -1;
+		return -8;
 	}
 
-	int screen_w = codecContext->width;
-	int screen_h = codecContext->height;
-	SDL_Window* screen = SDL_CreateWindow("Simplest ffmpeg player's Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screen_w, screen_h, SDL_WINDOW_OPENGL);
-
-	if (!screen) {
+	/* 创建SDL窗体 */
+	SDL_Window* window = SDL_CreateWindow("Simplest ffmpeg player's Window", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, codecContext->width, codecContext->height, SDL_WINDOW_OPENGL);
+	if (!window) {
 		printf("SDL: could not create window - exiting:%s\n", SDL_GetError());
-		return -1;
+		return -9;
 	}
 
-	SDL_Renderer* renderer = SDL_CreateRenderer(screen, -1, 0);
-	//IYUV: Y + U + V  (3 planes)
-	//YV12: Y + V + U  (3 planes)
+	/* 创建渲染器 */
+	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+
+	/* 创建纹理 */
 	SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, codecContext->width, codecContext->height);
 
-	SDL_Rect rect;
-	rect.x = 0;
-	rect.y = 0;
-	rect.w = screen_w;
-	rect.h = screen_h;
+	/* 创建需要在窗体上渲染的区域 */
+	SDL_Rect rect{ 0, 0, codecContext->width, codecContext->height};
 
-	//SDL End----------------------
-	while (av_read_frame(avformatContext, packet) >= 0){
-		if (packet->stream_index == videoStreamIndex){
+	/* 开始读取帧，并解码 */
+	while (av_read_frame(avformatContext, packet) >= 0){  // 从文件中读取一帧数据放入AVPacket中
+		if (packet->stream_index == videoStreamIndex){   // 如果此帧数据是第一个视频流的数据，则开始解码
+			/* 解码packet，存入frame中，got_picture非0表示有可解码的数据，返回值小于0表示解码出错*/
 			int got_picture = 0;
 			int ret = avcodec_decode_video2(codecContext, frame, &got_picture, packet);
 			if (ret < 0){
 				printf("Decode Error.\n");
-				return -1;
+				return -10;
 			}
+
 			if (got_picture){
+				/* 将解码后的图像转换成YUV420P planar图像 */
 				sws_scale(img_convert_ctx, (const unsigned char* const*)frame->data, frame->linesize, 0, codecContext->height, yuvFrame->data, yuvFrame->linesize);
 
+				/* 渲染该图像 */
 				SDL_UpdateYUVTexture(texture, &rect, yuvFrame->data[0], yuvFrame->linesize[0], yuvFrame->data[1], yuvFrame->linesize[1], yuvFrame->data[2], yuvFrame->linesize[2]);
-
 				SDL_RenderClear(renderer);
 				SDL_RenderCopy(renderer, texture, NULL, &rect);
 				SDL_RenderPresent(renderer);
 
+				/* 延迟40s后读取并解码下一帧， 即帧率约25*/
 				SDL_Delay(40);
 			}
 		}
 		av_free_packet(packet);
 	}
 
-
 	sws_freeContext(img_convert_ctx);
-
+	
 
 
 	getchar();
